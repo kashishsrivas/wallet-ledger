@@ -3,7 +3,6 @@
 A full-stack digital wallet and double-entry ledger system built with **Java, Spring Boot, PostgreSQL, and React (TypeScript)**. Engineered to guarantee monetary accuracy, zero overdrafts, and idempotent retries under high concurrency.
 
 > **Live App:** [wallet-ledger-psi.vercel.app](https://wallet-ledger-psi.vercel.app)  
-- **Backend API (Render):** [https://wallet-ledger-api-rrbj.onrender.com](https://wallet-ledger-api-rrbj.onrender.com)
 ---
 
 ## Architecture
