@@ -2,6 +2,8 @@
 
 A full-stack digital wallet and double-entry ledger system built with **Java, Spring Boot, PostgreSQL, and React (TypeScript)**. Engineered to guarantee monetary accuracy, zero overdrafts, and idempotent retries under high concurrency.
 
+> **Live App:** [wallet-ledger-psi.vercel.app](https://wallet-ledger-psi.vercel.app)  
+> **Backend API & Swagger Docs:** [wallet-ledger-api-rrbj.onrender.com/swagger-ui/index.html](https://wallet-ledger-api-rrbj.onrender.com/swagger-ui/index.html)
 ---
 
 ## Architecture
@@ -27,9 +29,20 @@ A full-stack digital wallet and double-entry ledger system built with **Java, Sp
 │  ├── transfers    (UNIQUE idempotency_key)               │
 │  └── transactions (Immutable CREDIT / DEBIT ledger)      │
 └──────────────────────────────────────────────────────────┘
-```
 
----
+```
+## Live Cloud Architecture
+
+The application is deployed end-to-end across a multi-tier cloud stack:
+
+| Layer | Platform | Details |
+| :--- | :--- | :--- |
+| **Frontend SPA** | **Vercel** | React + Vite + TypeScript single-page app (`wallet-ledger-psi.vercel.app`) with SPA routing configured via `vercel.json` |
+| **Backend API** | **Render** | Containerized Java 21 / Spring Boot 3 REST API built via multi-stage `Dockerfile` (`wallet-ledger-api-rrbj.onrender.com`) |
+| **Database** | **Neon.tech** | Serverless **PostgreSQL 16** with automated **Flyway** schema migrations and SSL enforcement |
+| **Uptime & Keep-Alive** | **cron-job.org** | Scheduled 10-minute HTTP health checks to prevent free-tier cold starts and maintain instant API responsiveness |
+
+--- 
 
 ## Key Engineering Guarantees
 
@@ -64,6 +77,14 @@ The test suite (`./mvnw test`) uses **JUnit 5**, **Mockito**, and **Testcontaine
   * Total money across all wallets remains strictly conserved at `₹1,000.0000`.
   * Every successful transfer produces matching `DEBIT` and `CREDIT` ledger records.
 * **Idempotency Replay & Conflict Tests**: Verifies duplicate keys never double-spend and mismatched payloads trigger `409 Conflict`.
+
+---
+
+## Tech Stack
+
+* **Backend:** Java 21, Spring Boot 4, Spring Data JPA, Hibernate, Flyway, Bean Validation, Springdoc OpenAPI (Swagger)
+* **Frontend:** React, TypeScript, Vite, Tailwind CSS, TanStack Query, Axios
+* **Database & DevOps:** PostgreSQL 16 (Neon & Docker Compose), Multi-stage Docker, Vercel, Render, cron-job.org
 
 ---
 
