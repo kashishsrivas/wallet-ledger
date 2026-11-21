@@ -1,4 +1,4 @@
-# wallet-ledger — Digital Wallet & Double-Entry Ledger API
+# Wallet-Ledger — Digital Wallet & Double-Entry Ledger API
 
 A full-stack digital wallet and double-entry ledger system built with **Java, Spring Boot, PostgreSQL, and React (TypeScript)**. Engineered to guarantee monetary accuracy, zero overdrafts, and idempotent retries under high concurrency.
 
