@@ -1,0 +1,16 @@
+# Compiled & Build Artifacts
+target/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Environment & Secrets
+.env
+
+# IDE & OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
