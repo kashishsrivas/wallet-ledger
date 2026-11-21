@@ -23,3 +23,7 @@ server:
 springdoc:
   swagger-ui:
     path: /swagger-ui/index.html
+
+jwt:
+  secret: ${JWT_SECRET:bXktc3VwZXItc2VjcmV0LWp3dC1rZXktZm9yLXdhbGxldC1sZWRnZXItMjU2LWJpdHM=}
+  expiration-ms: 86400000 # 24 hours

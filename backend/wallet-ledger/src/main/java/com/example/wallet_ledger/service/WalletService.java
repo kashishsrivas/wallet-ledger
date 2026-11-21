@@ -6,14 +6,15 @@ import com.example.wallet_ledger.dto.TransactionResponse;
 import com.example.wallet_ledger.dto.WalletResponse;
 import com.example.wallet_ledger.entity.Transaction;
 import com.example.wallet_ledger.entity.TransactionType;
+import com.example.wallet_ledger.entity.User;
 import com.example.wallet_ledger.entity.Wallet;
 import com.example.wallet_ledger.exception.ApiException;
 import com.example.wallet_ledger.repository.TransactionRepository;
 import com.example.wallet_ledger.repository.WalletRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,20 +36,29 @@ public class WalletService {
         this.transactionRepository = transactionRepository;
     }
 
+    private User getCurrentUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     @Transactional
     public WalletResponse createWallet(String owner) {
+        User currentUser = getCurrentUser();
+
         Wallet wallet = new Wallet(
                 UUID.randomUUID(),
                 owner.trim(),
                 BigDecimal.ZERO.setScale(4, RoundingMode.HALF_UP),
                 OffsetDateTime.now(ZoneOffset.UTC)
         );
+        wallet.setUser(currentUser);
+
         return WalletResponse.from(walletRepository.save(wallet));
     }
 
     @Transactional(readOnly = true)
     public List<WalletResponse> getAllWallets() {
-        return walletRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
+        User currentUser = getCurrentUser();
+        return walletRepository.findAllByUserIdOrderByCreatedAtDesc(currentUser.getId())
                 .stream()
                 .map(WalletResponse::from)
                 .toList();
@@ -56,7 +66,8 @@ public class WalletService {
 
     @Transactional(readOnly = true)
     public WalletResponse getWallet(UUID walletId) {
-        Wallet wallet = walletRepository.findById(walletId)
+        User currentUser = getCurrentUser();
+        Wallet wallet = walletRepository.findByIdAndUserId(walletId, currentUser.getId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "WALLET_NOT_FOUND", "Wallet not found: " + walletId));
         return WalletResponse.from(wallet);
     }
@@ -67,9 +78,11 @@ public class WalletService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_AMOUNT", "Top-up amount must be greater than zero.");
         }
 
+        User currentUser = getCurrentUser();
         BigDecimal amount = rawAmount.setScale(4, RoundingMode.HALF_UP);
 
         Wallet wallet = walletRepository.findByIdForUpdate(walletId)
+                .filter(w -> w.getUser().getId().equals(currentUser.getId()))
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "WALLET_NOT_FOUND", "Wallet not found: " + walletId));
 
         wallet.setBalance(wallet.getBalance().add(amount));
@@ -94,7 +107,8 @@ public class WalletService {
 
     @Transactional(readOnly = true)
     public PageResponse<TransactionResponse> getTransactions(UUID walletId, Pageable pageable) {
-        if (!walletRepository.existsById(walletId)) {
+        User currentUser = getCurrentUser();
+        if (walletRepository.findByIdAndUserId(walletId, currentUser.getId()).isEmpty()) {
             throw new ApiException(HttpStatus.NOT_FOUND, "WALLET_NOT_FOUND", "Wallet not found: " + walletId);
         }
         Page<TransactionResponse> page = transactionRepository

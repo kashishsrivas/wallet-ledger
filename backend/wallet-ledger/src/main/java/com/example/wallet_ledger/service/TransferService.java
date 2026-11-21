@@ -7,6 +7,7 @@ import com.example.wallet_ledger.repository.TransactionRepository;
 import com.example.wallet_ledger.repository.TransferRepository;
 import com.example.wallet_ledger.repository.WalletRepository;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,10 @@ public class TransferService {
         this.transactionRepository = transactionRepository;
     }
 
+    private User getCurrentUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
     public record TransferExecutionResult(TransferResponse response, boolean created) {}
 
     @Transactional
@@ -47,6 +52,7 @@ public class TransferService {
             throw new ApiException(HttpStatus.BAD_REQUEST, "SAME_WALLET_TRANSFER", "Sender and receiver wallets must be different.");
         }
 
+        User currentUser = getCurrentUser();
         BigDecimal amount = rawAmount.setScale(4, RoundingMode.HALF_UP);
         String trimmedKey = idempotencyKey.trim();
 
@@ -80,7 +86,16 @@ public class TransferService {
         Wallet sender = fromWalletId.equals(firstLocked.getId()) ? firstLocked : secondLocked;
         Wallet receiver = toWalletId.equals(firstLocked.getId()) ? firstLocked : secondLocked;
 
-        // 3. Verify sufficient balance
+        // 3. Verify the authenticated user owns the sender wallet
+        if (!sender.getUser().getId().equals(currentUser.getId())) {
+            throw new ApiException(
+                    HttpStatus.FORBIDDEN,
+                    "FORBIDDEN_WALLET_ACCESS",
+                    "You do not have permission to transfer funds from wallet: " + fromWalletId
+            );
+        }
+
+        // 4. Verify sufficient balance
         if (sender.getBalance().compareTo(amount) < 0) {
             throw new ApiException(
                     HttpStatus.CONFLICT,
@@ -89,12 +104,12 @@ public class TransferService {
             );
         }
 
-        // 4. Update balances
+        // 5. Update balances
         sender.setBalance(sender.getBalance().subtract(amount));
         receiver.setBalance(receiver.getBalance().add(amount));
         walletRepository.saveAll(List.of(sender, receiver));
 
-        // 5. Record transfer
+        // 6. Record transfer
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
         UUID transferId = UUID.randomUUID();
 
@@ -109,7 +124,7 @@ public class TransferService {
         );
         transferRepository.save(transfer);
 
-        // 6. Record double-entry ledger transactions (DEBIT sender, CREDIT receiver)
+        // 7. Record double-entry ledger transactions (DEBIT sender, CREDIT receiver)
         Transaction debitTx = new Transaction(
                 UUID.randomUUID(),
                 sender.getId(),

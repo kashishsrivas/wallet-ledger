@@ -25,6 +25,17 @@ public class Wallet {
     @Column(name = "created_at", nullable = false)
     private OffsetDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
     protected Wallet() {}
 
     public Wallet(UUID id, String owner, BigDecimal balance, OffsetDateTime createdAt) {
