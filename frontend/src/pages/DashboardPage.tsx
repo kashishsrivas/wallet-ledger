@@ -10,8 +10,8 @@ export function DashboardPage() {
     queryFn: walletApi.getWallets,
   });
 
-  const totalBalance =
-    wallets?.reduce((sum, w) => sum + parseFloat(w.balance), 0) ?? 0;
+  const safeWallets = Array.isArray(wallets) ? wallets : [];
+  const totalBalance = safeWallets.reduce((sum, w) => sum + Number.parseFloat(w.balance), 0);
 
   if (isLoading) {
     return <div className="text-slate-500 text-sm">Loading wallets...</div>;
