@@ -1,4 +1,4 @@
-# Wallet-Ledger — Digital Wallet & Double-Entry Ledger API
+# Wallet Ledger — Digital Wallet & Double-Entry Ledger API
 
 A full-stack digital wallet and double-entry ledger system built with **Java, Spring Boot, PostgreSQL, and React (TypeScript)**. Engineered to guarantee monetary accuracy, zero overdrafts, and idempotent retries under high concurrency.
 
@@ -27,6 +27,7 @@ A full-stack digital wallet and double-entry ledger system built with **Java, Sp
 │  ├── transfers    (UNIQUE idempotency_key)               │
 │  └── transactions (Immutable CREDIT / DEBIT ledger)      │
 └──────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -73,38 +74,31 @@ The test suite (`./mvnw test`) uses **JUnit 5**, **Mockito**, and **Testcontaine
 * Node.js 20+
 * Docker Desktop
 
-```
-
 ### 1. Start PostgreSQL
 ```bash
 docker compose up -d
-
 ```
 
 ### 2. Run the Spring Boot Backend
+```bash
 cd backend/wallet-ledger
 ./mvnw spring-boot:run
-
-* API Base URL: http://localhost:8080/api/v1
-* Swagger UI: http://localhost:8080/swagger-ui/index.html
-
+```
+* API Base URL: `http://localhost:8080/api/v1`
+* Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 
 ### 3. Run the React Frontend
 ```bash
 cd frontend
 npm install
 npm run dev
-
-* Dashboard UI: http://localhost:5173
-
 ```
+* Dashboard UI: `http://localhost:5173`
 
 ### 4. Run Unit, Integration & Concurrency Tests
-
 ```bash
 cd backend/wallet-ledger
 ./mvnw test
-
 ```
 
 ---
@@ -112,7 +106,7 @@ cd backend/wallet-ledger
 ## API Endpoints
 
 | Method | Endpoint | Description |
-| --- | --- | --- |
+| :--- | :--- | :--- |
 | `POST` | `/api/v1/wallets` | Create a new wallet (`201 Created`) |
 | `GET` | `/api/v1/wallets` | List all wallets |
 | `GET` | `/api/v1/wallets/{id}` | Get wallet details and current balance |
@@ -120,9 +114,8 @@ cd backend/wallet-ledger
 | `GET` | `/api/v1/wallets/{id}/transactions` | Paginated transaction history (`?page=0&size=20`) |
 | `POST` | `/api/v1/transfers` | Atomic transfer with `Idempotency-Key` header (`201 Created` / `200 OK` on retry) |
 
-```
 ---
 
 ## Author
 
-**Kashish Srivastava**
+**Kashish Srivastava**  
